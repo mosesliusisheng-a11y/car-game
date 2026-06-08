@@ -1,0 +1,102 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #2c3e50;
+    font-family: Arial, sans-serif;
+}
+
+.game-container {
+    width: 400px;
+    height: 400px;
+    background-color: #ecf0f1;
+    position: relative;
+    border: 5px solid #34495e;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+/* The Car */
+.car {
+    position: absolute;
+    font-size: 40px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: top 0.15s ease-out, left 0.15s ease-out;
+    z-index: 10;
+    user-select: none;
+}
+
+/* When the car moves right, flip it 180 degrees */
+.car.flip {
+    transform: translate(-50%, -50%) scaleX(-1);
+}
+
+/* The Colored Squares */
+.square {
+    position: absolute;
+    font-size: 40px;
+    z-index: 5;
+}
+
+#sq-black {
+    top: 0px;
+    left: 0px;
+}
+
+#sq-red {
+    bottom: 0px;
+    left: 0px;
+}
+
+#sq-yellow {
+    bottom: 0px;
+    right: 0px;
+}
+
+/* The Control Buttons */
+.btn {
+    position: absolute;
+    font-size: 30px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 5px 10px;
+    z-index: 15;
+    outline: none;
+    box-shadow: 0 4px #7f8c8d;
+}
+
+.btn:active {
+    box-shadow: 0 0 #7f8c8d;
+    transform: translateY(4px);
+}
+
+/* Positioning exactly in the middle of the sides */
+#btn-up {
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#btn-down {
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#btn-left {
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#btn-right {
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
