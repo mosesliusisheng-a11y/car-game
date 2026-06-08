@@ -10,7 +10,7 @@ const btnRight = document.getElementById('btn-right');
 let carX = 50; // percentage from left
 let carY = 50; // percentage from top
 let carType = 'police'; // can be 'police', 'red', or 'yellow'
-const moveStep = 2; // Smaller step for smoother movement
+const moveStep = 3; // Changed from 2 to 3: moves 3% of the screen per tick
 
 let moveInterval = null; // Variable to hold the continuous movement timer
 let currentDirection = null; // Track the current direction
