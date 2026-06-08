@@ -10,7 +10,10 @@ const btnRight = document.getElementById('btn-right');
 let carX = 50; // percentage from left
 let carY = 50; // percentage from top
 let carType = 'police'; // can be 'police', 'red', or 'yellow'
-const moveStep = 10; // moves 10% of the screen per press
+const moveStep = 2; // Smaller step for smoother movement
+
+let moveInterval = null; // Variable to hold the continuous movement timer
+let currentDirection = null; // Track the current direction
 
 // Function to update car emoji and flip status based on direction
 function updateCarVisuals(direction) {
@@ -41,6 +44,8 @@ function updateCarVisuals(direction) {
 
 // Function to move the car and check collisions
 function moveCar(direction) {
+    currentDirection = direction; // Update current direction
+
     // Move
     if (direction === 'up') carY -= moveStep;
     if (direction === 'down') carY += moveStep;
@@ -71,55 +76,79 @@ function checkCollisions() {
     const squares = [
         { id: 'sq-red', type: 'red' },
         { id: 'sq-yellow', type: 'yellow' },
-        { id: 'sq-black', type: 'police' } // Black turns it back to police
+        { id: 'sq-black', type: 'police' }
     ];
 
     for (let sq of squares) {
         const sqElement = document.getElementById(sq.id);
         const sqRect = sqElement.getBoundingClientRect();
 
-        // Simple AABB (Axis-Aligned Bounding Box) collision detection
         if (!(carRect.right < sqRect.left || 
               carRect.left > sqRect.right || 
               carRect.bottom < sqRect.top || 
               carRect.top > sqRect.bottom)) {
             
-            // Only update if the car type changes to avoid constant re-rendering
             if (carType !== sq.type) {
                 carType = sq.type;
-                 
-                // Figure out if it's currently horizontal or vertical to maintain view
                 let currentEmoji = car.textContent;
                 if (currentEmoji === '🚔' || currentEmoji === '🚘' || currentEmoji === '🚖') {
-                    updateCarVisuals(carRect.top > sqRect.top ? 'up' : 'down'); // maintaining vertical view
+                    updateCarVisuals(carRect.top > sqRect.top ? 'up' : 'down');
                 } else {
-                    updateCarVisuals(carRect.left > sqRect.left ? 'left' : 'right'); // maintaining horizontal view
+                    updateCarVisuals(carRect.left > sqRect.left ? 'left' : 'right');
                 }
             }
-            break; // Stop checking other squares if we hit one
+            break;
         }
     }
 }
 
-// --- UPDATED BUTTON LISTENERS ---
+// --- CONTINUOUS MOVEMENT ENGINE ---
 
-// Prevent the default browser behavior for long presses (like text selection or menus)
+function startMoving(direction) {
+    // If already moving in this direction, do nothing
+    if (moveInterval !== null) return; 
+    
+    // Move immediately on the first press
+    moveCar(direction); 
+    
+    // Set a timer to keep moving every 30 milliseconds as long as it's held
+    moveInterval = setInterval(() => {
+        moveCar(direction);
+    }, 30); 
+}
+
+function stopMoving() {
+    // Stop the continuous movement timer
+    clearInterval(moveInterval);
+    moveInterval = null;
+}
+
+// Button Event Listers (Pointer Down to start, Pointer Up to stop)
+btnUp.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('up'); });
+btnDown.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('down'); });
+btnLeft.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('left'); });
+btnRight.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('right'); });
+
+// When the button is released, stop moving
 document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-    });
+    btn.addEventListener('pointerup', stopMoving);
+    btn.addEventListener('pointerleave', stopMoving); // Stops if finger slides off button
+    btn.addEventListener('pointercancel', stopMoving); // Stops if browser cancels the touch
 });
 
-// Use pointerdown so it moves the EXACT millisecond the button is pressed
-btnUp.addEventListener('pointerdown', () => moveCar('up'));
-btnDown.addEventListener('pointerdown', () => moveCar('down'));
-btnLeft.addEventListener('pointerdown', () => moveCar('left'));
-btnRight.addEventListener('pointerdown', () => moveCar('right'));
-
-// Keyboard support (WASD and Arrow Keys) - These already respond instantly!
+// Keyboard support (WASD and Arrow Keys)
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowUp' || e.key === 'w') moveCar('up');
-    if (e.key === 'ArrowDown' || e.key === 's') moveCar('down');
-    if (e.key === 'ArrowLeft' || e.key === 'a') moveCar('left');
-    if (e.key === 'ArrowRight' || e.key === 'd') moveCar('right');
+    if (e.repeat) return; // Prevents keyboard repeat stuttering
+    if (e.key === 'ArrowUp' || e.key === 'w') startMoving('up');
+    if (e.key === 'ArrowDown' || e.key === 's') startMoving('down');
+    if (e.key === 'ArrowLeft' || e.key === 'a') startMoving('left');
+    if (e.key === 'ArrowRight' || e.key === 'd') startMoving('right');
+});
+
+document.addEventListener('keyup', (e) => {
+    // Only stop if the key released matches the current moving direction
+    if (e.key === 'ArrowUp' || e.key === 'w') stopMoving();
+    if (e.key === 'ArrowDown' || e.key === 's') stopMoving();
+    if (e.key === 'ArrowLeft' || e.key === 'a') stopMoving();
+    if (e.key === 'ArrowRight' || e.key === 'd') stopMoving();
 });
