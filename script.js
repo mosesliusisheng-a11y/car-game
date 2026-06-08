@@ -10,7 +10,7 @@ const btnRight = document.getElementById('btn-right');
 let carX = 50; // percentage from left
 let carY = 50; // percentage from top
 let carType = 'police'; // can be 'police', 'red', or 'yellow'
-const moveStep = 10; // moves 10% of the screen per click
+const moveStep = 10; // moves 10% of the screen per press
 
 // Function to update car emoji and flip status based on direction
 function updateCarVisuals(direction) {
@@ -87,11 +87,8 @@ function checkCollisions() {
             // Only update if the car type changes to avoid constant re-rendering
             if (carType !== sq.type) {
                 carType = sq.type;
-                // We re-run updateCarVisuals without changing direction to swap the emoji
-                const currentDirection = car.classList.contains('flip') ? 'right' : 
-                                         (car.style.top !== '50%' ? 'down' : 'right'); // fallback
                  
-                // To keep it simple, we just figure out if it's horizontal or vertical right now
+                // Figure out if it's currently horizontal or vertical to maintain view
                 let currentEmoji = car.textContent;
                 if (currentEmoji === '🚔' || currentEmoji === '🚘' || currentEmoji === '🚖') {
                     updateCarVisuals(carRect.top > sqRect.top ? 'up' : 'down'); // maintaining vertical view
@@ -104,13 +101,22 @@ function checkCollisions() {
     }
 }
 
-// Event Listeners for Buttons
-btnUp.addEventListener('click', () => moveCar('up'));
-btnDown.addEventListener('click', () => moveCar('down'));
-btnLeft.addEventListener('click', () => moveCar('left'));
-btnRight.addEventListener('click', () => moveCar('right'));
+// --- UPDATED BUTTON LISTENERS ---
 
-// Keyboard support (WASD and Arrow Keys)
+// Prevent the default browser behavior for long presses (like text selection or menus)
+document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+    });
+});
+
+// Use pointerdown so it moves the EXACT millisecond the button is pressed
+btnUp.addEventListener('pointerdown', () => moveCar('up'));
+btnDown.addEventListener('pointerdown', () => moveCar('down'));
+btnLeft.addEventListener('pointerdown', () => moveCar('left'));
+btnRight.addEventListener('pointerdown', () => moveCar('right'));
+
+// Keyboard support (WASD and Arrow Keys) - These already respond instantly!
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowUp' || e.key === 'w') moveCar('up');
     if (e.key === 'ArrowDown' || e.key === 's') moveCar('down');
