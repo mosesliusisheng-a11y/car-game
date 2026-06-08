@@ -111,10 +111,10 @@ function startMoving(direction) {
     // Move immediately on the first press
     moveCar(direction); 
     
-    // Set a timer to keep moving every 30 milliseconds as long as it's held
+    // Set a timer to keep moving every 40 milliseconds (Changed from 30 to 40)
     moveInterval = setInterval(() => {
         moveCar(direction);
-    }, 30); 
+    }, 40); 
 }
 
 function stopMoving() {
