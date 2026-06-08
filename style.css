@@ -100,3 +100,13 @@ body {
     top: 50%;
     transform: translateY(-50%);
 }
+
+/* Prevent text selection and messy highlighting on buttons and the car */
+.btn, .car, .square, .game-container {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* Internet Explorer/Edge */
+    user-select: none;         /* Standard syntax */
+
+    -webkit-touch-callout: none; /* Prevents iOS pop-up menus on long press */
+}
