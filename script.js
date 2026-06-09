@@ -25,6 +25,7 @@ const carEmojis = {
     yellow: { vertical: '🚖', horizontal: '🚕' }
 };
 
+// Added 'black' here so the circle can be black
 const targetEmojis = {
     black: '⚫️',
     red: '🔴',
@@ -82,7 +83,7 @@ function checkCollisions() {
     const squares = [
         { id: 'sq-red', type: 'red' },
         { id: 'sq-yellow', type: 'yellow' },
-        { id: 'sq-black', type: 'police' } 
+        { id: 'sq-black', type: 'police' } // sq-black maps to carType 'police'
     ];
 
     for (let sq of squares) {
@@ -106,8 +107,12 @@ function checkCollisions() {
             }
 
             // --- WIN/LOSE SYSTEM ---
-            // Compare the square type to the target circle type
-            if (sq.type === targetType) {
+            // Since sq-black uses type 'police', we need to map it to 'black' to match the targetType
+            let squareColorType = sq.type;
+            if (sq.type === 'police') squareColorType = 'black';
+
+            // Compare the square color type to the target circle type
+            if (squareColorType === targetType) {
                 targetCircle.textContent = '✅';
                 gameEnded = true; // Stop the car from moving further
             } else {
@@ -173,13 +178,17 @@ function resetGame() {
     car.style.left = carX + '%';
     gameEnded = false;
 
-    // 1. Pick a random target color for the circle (red or yellow, since black isn't a target in this logic)
-    const targetOptions = ['red', 'yellow'];
+    // 1. Pick a random target color for the circle (now includes black!)
+    const targetOptions = ['black', 'red', 'yellow'];
     targetType = targetOptions[Math.floor(Math.random() * targetOptions.length)];
     targetCircle.textContent = targetEmojis[targetType];
 
     // 2. Pick a random starting car type that is DIFFERENT from the target
-    const carOptions = ['police', 'red', 'yellow'].filter(type => type !== targetType);
+    // If the target is 'black', the car type we look for is 'police'
+    let targetAsCarType = targetType;
+    if (targetType === 'black') targetAsCarType = 'police';
+
+    const carOptions = ['police', 'red', 'yellow'].filter(type => type !== targetAsCarType);
     carType = carOptions[Math.floor(Math.random() * carOptions.length)];
 
     // 3. Set the initial car emoji (front view facing down by default)
