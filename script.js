@@ -1,5 +1,6 @@
 const car = document.getElementById('car');
 const gameArea = document.getElementById('game-container');
+const targetCircle = document.getElementById('target-circle');
 
 const btnUp = document.getElementById('btn-up');
 const btnDown = document.getElementById('btn-down');
@@ -7,13 +8,28 @@ const btnLeft = document.getElementById('btn-left');
 const btnRight = document.getElementById('btn-right');
 
 // Game state
-let carX = 50; // percentage from left
-let carY = 50; // percentage from top
-let carType = 'police'; // can be 'police', 'red', or 'yellow'
-const moveStep = 3; // Changed from 2 to 3: moves 3% of the screen per tick
+let carX = 50;
+let carY = 50;
+let carType = 'police'; // 'police' (black), 'red', or 'yellow'
+let targetType = 'red';   // The color the player needs to find
+let gameEnded = false;    // Stops movement after win/lose
+const moveStep = 3;
 
-let moveInterval = null; // Variable to hold the continuous movement timer
-let currentDirection = null; // Track the current direction
+let moveInterval = null;
+let currentDirection = null;
+
+// Dictionary to translate types to emojis
+const carEmojis = {
+    police: { vertical: '🚔', horizontal: '🚓' },
+    red:    { vertical: '🚘', horizontal: '🚗' },
+    yellow: { vertical: '🚖', horizontal: '🚕' }
+};
+
+const targetEmojis = {
+    black: '⚫️',
+    red: '🔴',
+    yellow: '🟡'
+};
 
 // Function to update car emoji and flip status based on direction
 function updateCarVisuals(direction) {
@@ -21,17 +37,10 @@ function updateCarVisuals(direction) {
     let emoji = '';
 
     if (direction === 'up' || direction === 'down') {
-        if (carType === 'police') emoji = '🚔';
-        else if (carType === 'red') emoji = '🚘';
-        else if (carType === 'yellow') emoji = '🚖';
+        emoji = carEmojis[carType].vertical;
     } else if (direction === 'left' || direction === 'right') {
-        if (carType === 'police') emoji = '🚓';
-        else if (carType === 'red') emoji = '🚗';
-        else if (carType === 'yellow') emoji = '🚕';
-
-        if (direction === 'right') {
-            isFlipped = true;
-        }
+        emoji = carEmojis[carType].horizontal;
+        if (direction === 'right') isFlipped = true;
     }
 
     car.textContent = emoji;
@@ -42,41 +51,38 @@ function updateCarVisuals(direction) {
     }
 }
 
-// Function to move the car and check collisions
+// Function to move the car
 function moveCar(direction) {
-    currentDirection = direction; // Update current direction
+    if (gameEnded) return; // Stop moving if game is over
 
-    // Move
+    currentDirection = direction;
+
     if (direction === 'up') carY -= moveStep;
     if (direction === 'down') carY += moveStep;
     if (direction === 'left') carX -= moveStep;
     if (direction === 'right') carX += moveStep;
 
-    // Keep inside the square (boundaries)
+    // Keep inside boundaries
     if (carX < 5) carX = 5;
     if (carX > 95) carX = 95;
     if (carY < 5) carY = 5;
     if (carY > 95) carY = 95;
 
-    // Apply position to CSS
     car.style.top = carY + '%';
     car.style.left = carX + '%';
 
-    // Update the emoji and direction
     updateCarVisuals(direction);
-
-    // Check collision with colored squares
     checkCollisions();
 }
 
-// Collision detection using coordinates
+// Collision detection
 function checkCollisions() {
     const carRect = car.getBoundingClientRect();
     
     const squares = [
         { id: 'sq-red', type: 'red' },
         { id: 'sq-yellow', type: 'yellow' },
-        { id: 'sq-black', type: 'police' }
+        { id: 'sq-black', type: 'police' } 
     ];
 
     for (let sq of squares) {
@@ -88,6 +94,7 @@ function checkCollisions() {
               carRect.bottom < sqRect.top || 
               carRect.top > sqRect.bottom)) {
             
+            // Update Car Type
             if (carType !== sq.type) {
                 carType = sq.type;
                 let currentEmoji = car.textContent;
@@ -97,7 +104,17 @@ function checkCollisions() {
                     updateCarVisuals(carRect.left > sqRect.left ? 'left' : 'right');
                 }
             }
-            break;
+
+            // --- WIN/LOSE SYSTEM ---
+            // Compare the square type to the target circle type
+            if (sq.type === targetType) {
+                targetCircle.textContent = '✅';
+                gameEnded = true; // Stop the car from moving further
+            } else {
+                targetCircle.textContent = '❎';
+                gameEnded = true; 
+            }
+            break; 
         }
     }
 }
@@ -105,40 +122,36 @@ function checkCollisions() {
 // --- CONTINUOUS MOVEMENT ENGINE ---
 
 function startMoving(direction) {
-    // If already moving in this direction, do nothing
+    if (gameEnded) return; // Don't start moving if game is over
     if (moveInterval !== null) return; 
     
-    // Move immediately on the first press
     moveCar(direction); 
     
-    // Set a timer to keep moving every 40 milliseconds (Changed from 30 to 40)
     moveInterval = setInterval(() => {
         moveCar(direction);
     }, 40); 
 }
 
 function stopMoving() {
-    // Stop the continuous movement timer
     clearInterval(moveInterval);
     moveInterval = null;
 }
 
-// Button Event Listers (Pointer Down to start, Pointer Up to stop)
+// Button Event Listeners
 btnUp.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('up'); });
 btnDown.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('down'); });
 btnLeft.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('left'); });
 btnRight.addEventListener('pointerdown', (e) => { e.preventDefault(); startMoving('right'); });
 
-// When the button is released, stop moving
 document.querySelectorAll('.btn').forEach(btn => {
     btn.addEventListener('pointerup', stopMoving);
-    btn.addEventListener('pointerleave', stopMoving); // Stops if finger slides off button
-    btn.addEventListener('pointercancel', stopMoving); // Stops if browser cancels the touch
+    btn.addEventListener('pointerleave', stopMoving);
+    btn.addEventListener('pointercancel', stopMoving);
 });
 
-// Keyboard support (WASD and Arrow Keys)
+// Keyboard support
 document.addEventListener('keydown', (e) => {
-    if (e.repeat) return; // Prevents keyboard repeat stuttering
+    if (e.repeat) return;
     if (e.key === 'ArrowUp' || e.key === 'w') startMoving('up');
     if (e.key === 'ArrowDown' || e.key === 's') startMoving('down');
     if (e.key === 'ArrowLeft' || e.key === 'a') startMoving('left');
@@ -146,9 +159,33 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('keyup', (e) => {
-    // Only stop if the key released matches the current moving direction
     if (e.key === 'ArrowUp' || e.key === 'w') stopMoving();
     if (e.key === 'ArrowDown' || e.key === 's') stopMoving();
     if (e.key === 'ArrowLeft' || e.key === 'a') stopMoving();
     if (e.key === 'ArrowRight' || e.key === 'd') stopMoving();
 });
+
+// --- GAME INITIALIZATION ---
+function resetGame() {
+    carX = 50;
+    carY = 50;
+    car.style.top = carY + '%';
+    car.style.left = carX + '%';
+    gameEnded = false;
+
+    // 1. Pick a random target color for the circle (red or yellow, since black isn't a target in this logic)
+    const targetOptions = ['red', 'yellow'];
+    targetType = targetOptions[Math.floor(Math.random() * targetOptions.length)];
+    targetCircle.textContent = targetEmojis[targetType];
+
+    // 2. Pick a random starting car type that is DIFFERENT from the target
+    const carOptions = ['police', 'red', 'yellow'].filter(type => type !== targetType);
+    carType = carOptions[Math.floor(Math.random() * carOptions.length)];
+
+    // 3. Set the initial car emoji (front view facing down by default)
+    car.textContent = carEmojis[carType].vertical;
+    car.classList.remove('flip');
+}
+
+// Start the game when the script loads!
+resetGame();
