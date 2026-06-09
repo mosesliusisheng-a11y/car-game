@@ -16,6 +16,18 @@ body {
     border: 5px solid #34495e;
     box-sizing: border-box;
     border-radius: 10px;
+    overflow: hidden; /* Keeps everything inside */
+}
+
+/* The Target Circle */
+.target-circle {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 45px;
+    z-index: 20;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* The Car */
@@ -25,21 +37,19 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    transition: top 0.04s linear, left 0.04s linear; /* Shorter transition to match the new timer */
+    transition: top 0.04s linear, left 0.04s linear;
     z-index: 10;
     user-select: none;
-    
-    /* --- ADD THESE 3 LINES TO FIX THE TRAILING LINES --- */
+    -webkit-user-select: none;
     width: 45px;
     height: 45px;
-    background-color: #ecf0f1; /* Matches the game board background so it clears the trail */
+    background-color: #ecf0f1;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 5px; /* Optional: makes the background box slightly rounded */
+    border-radius: 5px;
 }
 
-/* When the car moves right, flip it 180 degrees */
 .car.flip {
     transform: translate(-50%, -50%) scaleX(-1);
 }
@@ -49,6 +59,8 @@ body {
     position: absolute;
     font-size: 40px;
     z-index: 5;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 #sq-black {
@@ -78,6 +90,9 @@ body {
     z-index: 15;
     outline: none;
     box-shadow: 0 4px #7f8c8d;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .btn:active {
@@ -85,7 +100,6 @@ body {
     transform: translateY(4px);
 }
 
-/* Positioning exactly in the middle of the sides */
 #btn-up {
     top: 5px;
     left: 50%;
@@ -108,14 +122,4 @@ body {
     right: 5px;
     top: 50%;
     transform: translateY(-50%);
-}
-
-/* Prevent text selection and messy highlighting on buttons and the car */
-.btn, .car, .square, .game-container {
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* Internet Explorer/Edge */
-    user-select: none;         /* Standard syntax */
-
-    -webkit-touch-callout: none; /* Prevents iOS pop-up menus on long press */
 }
